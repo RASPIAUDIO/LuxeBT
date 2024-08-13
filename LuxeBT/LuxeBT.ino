@@ -3,11 +3,7 @@
 #include <Wire.h>
 #include "BluetoothA2DPSink.h"
 #include "ESP_I2S.h"
-
-#include "driver/ledc.h"
-#include "driver/periph_ctrl.h"
 #include "driver/gpio.h"
-#include "esp_chip_info.h"
 #include "esp_mac.h"
 
 // Define your pins and other constants
@@ -207,46 +203,38 @@ void loop() {
 /////// Play/Pause button (using AVRC)  
   if (gpio_get_level(MU) == 0)
   {
-    delay(50);
-    if (gpio_get_level(MU) == 0)
+    while(gpio_get_level(MU) == 0) delay(10);
+    
+    if (BPause == false)
     {
-      if (BPause == false)
-      {
-        //        ES8388vol_Set(0);
-        a2dp_sink.pause();
-        BPause = true;
-      }
-      else
-      {
-        //        ES8388vol_Set(vol);
-        a2dp_sink.play();
-        BPause = false;
-      }
+      ES8388vol_Set(0);
+      a2dp_sink.pause();
+      BPause = true;
+    }
+    else
+    {
+      ES8388vol_Set(vol);
+      a2dp_sink.play();
+      BPause = false;
     }
   }
 
 ////// Vol+ button (using ES8388 codec)  
   if (gpio_get_level(VP) == 0)
   {
-    delay(50);
-    if (gpio_get_level(VP) == 0)
-    {
-      vol++;
-      if (vol > maxVol) vol = maxVol;
-      ES8388vol_Set(vol);
-    }
+    while(gpio_get_level(VP) == 0) delay(10);
+    vol++;
+    if (vol > maxVol) vol = maxVol;
+    ES8388vol_Set(vol);
   }
 
 ////// Vol- button (using ES8388 codec)  
   if (gpio_get_level(VM) == 0)
   {
-    delay(50);
-    if (gpio_get_level(VM) == 0)
-    {
-      vol--;
-      if (vol < 0) vol = 0;
-      ES8388vol_Set(vol);
-    }
+    while(gpio_get_level(VM) == 0) delay(10);    
+    vol--;
+    if (vol < 0) vol = 0;
+    ES8388vol_Set(vol);  
   }
     delay(100);
   }
