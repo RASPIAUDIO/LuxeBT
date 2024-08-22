@@ -76,7 +76,7 @@ int ES8388_Init(void)
   // sample freq 256
   st += ES8388_Write_Reg(24, 0x02);
   // LIN2/RIN2 for mixer
-  st += ES8388_Write_Reg(38, 0x09);
+ // st += ES8388_Write_Reg(38, 0x09);
   // left DAC to left mixer
   st += ES8388_Write_Reg(39, 0x90);
   // right DAC to right mixer
@@ -92,14 +92,14 @@ int ES8388_Init(void)
   st += ES8388_Write_Reg(46, 0x21);
   st += ES8388_Write_Reg(47, 0x21);
   //ROUT2/LOUT2 volume max
-  //     st += ES8388_Write_Reg(48, 0x21);
-  //     st += ES8388_Write_Reg(49, 0x21);
+  st += ES8388_Write_Reg(48, 0x21);
+  st += ES8388_Write_Reg(49, 0x21);
 
   st += ES8388_Write_Reg(2 , 0xF0);
   st += ES8388_Write_Reg(2 , 0x00);
   st += ES8388_Write_Reg(29, 0x1C);
   // DAC power-up LOUT1/ROUT1 enabled
-  st += ES8388_Write_Reg(4, 0x30);
+  st += ES8388_Write_Reg(4, 0x3C);
   // unmute
   st += ES8388_Write_Reg(25, 0x00);
   // amp validation
@@ -114,7 +114,6 @@ int ES8388_Init(void)
 void ES8388vol_Set(uint8_t volx)
 {
 #define M maxVol-33
-
   printf("volume ==> %d\n", volx);
   ES8388_Write_Reg(25, 0x00);
   if (volx > maxVol) volx = maxVol;
@@ -126,6 +125,8 @@ void ES8388vol_Set(uint8_t volx)
   {
     ES8388_Write_Reg(46, volx - M);
     ES8388_Write_Reg(47, volx - M);
+    ES8388_Write_Reg(48, volx - M);
+    ES8388_Write_Reg(49, volx - M);    
     ES8388_Write_Reg(26, 0x00);
     ES8388_Write_Reg(27, 0x00);
 
@@ -134,6 +135,8 @@ void ES8388vol_Set(uint8_t volx)
   {
     ES8388_Write_Reg(46, 0x00);
     ES8388_Write_Reg(47, 0x00);
+    ES8388_Write_Reg(48, 0x00);
+    ES8388_Write_Reg(49, 0x00);    
     ES8388_Write_Reg(26, (M - volx) * 3);
     ES8388_Write_Reg(27, (M - volx) * 3);
   }
