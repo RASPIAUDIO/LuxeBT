@@ -18,6 +18,8 @@
 #define MU GPIO_NUM_12      // Pause/Play
 #define VM GPIO_NUM_32      // Vol-
 #define VP GPIO_NUM_19      // Vol+ 
+#define Jack_Detect GPIO_NUM_27 
+
 bool BPause = false;
 #define maxVol 50
 
@@ -88,6 +90,16 @@ int ES8388_Init(void)
   st += ES8388_Write_Reg(27, 0x00);
   st += ES8388_Write_Reg(26, 0x00);
 
+
+  st += ES8388_Write_Reg(2 , 0xF0);
+  st += ES8388_Write_Reg(2 , 0x00);
+  st += ES8388_Write_Reg(29, 0x1C);
+  // DAC power-up LOUT1/ROUT1 and LOUT2/ROUT2 enabled
+  st += ES8388_Write_Reg(4, 0x3C);
+  // unmute
+  st += ES8388_Write_Reg(25, 0x00);
+
+
   //ROUT1/LOUT1 volume max
   st += ES8388_Write_Reg(46, 0x21);
   st += ES8388_Write_Reg(47, 0x21);
@@ -95,15 +107,17 @@ int ES8388_Init(void)
   st += ES8388_Write_Reg(48, 0x21);
   st += ES8388_Write_Reg(49, 0x21);
 
-  st += ES8388_Write_Reg(2 , 0xF0);
-  st += ES8388_Write_Reg(2 , 0x00);
-  st += ES8388_Write_Reg(29, 0x1C);
-  // DAC power-up LOUT1/ROUT1 enabled
-  st += ES8388_Write_Reg(4, 0x3C);
-  // unmute
-  st += ES8388_Write_Reg(25, 0x00);
+
+  
+  delay(10);
   // amp validation
   gpio_set_level(PA, 1);
+ /* 
+  delayMicroseconds(2);
+  gpio_set_level(PA, 0);
+  delayMicroseconds(2);
+  gpio_set_level(PA, 1);  
+ */ 
   return st;
 }
 ////////////////////////////////////////////////////////////////////////
@@ -164,6 +178,11 @@ void setup() {
   gpio_reset_pin(MU);
   gpio_set_direction(MU, GPIO_MODE_INPUT);
   gpio_set_pull_mode(MU, GPIO_PULLUP_ONLY);
+
+  // Jack_Detect
+  gpio_reset_pin(Jack_Detect);
+  gpio_set_direction(Jack_Detect, GPIO_MODE_INPUT);
+  gpio_set_pull_mode(Jack_Detect, GPIO_PULLUP_ONLY);  
   
 //////I2S init
   i2s.setPins(I2S_SCK, I2S_WS, I2S_SDOUT, I2S_SDIN, I2S_MCLK);
@@ -238,6 +257,18 @@ void loop() {
     vol--;
     if (vol < 0) vol = 0;
     ES8388vol_Set(vol);  
+  }
+
+///// Jack_Detect
+  if(gpio_get_level(Jack_Detect) == 1)
+  {
+// jack ON => Rout2/Lout2   
+    ES8388_Write_Reg(4, 0x0C);      
+  }
+  else
+  {
+// jack OFF => Rout1/Lout1   
+    ES8388_Write_Reg(4, 0x30);    
   }
     delay(100);
   }
