@@ -94,7 +94,7 @@ int ES8388_Init(void)
   st += ES8388_Write_Reg(2 , 0xF0);
   st += ES8388_Write_Reg(2 , 0x00);
   st += ES8388_Write_Reg(29, 0x1C);
-  // DAC power-up LOUT1/ROUT1 and LOUT2/ROUT2 enabled
+  // DAC power-up LOUT1/ROUT1 
   st += ES8388_Write_Reg(4, 0x30);
   // unmute
   st += ES8388_Write_Reg(25, 0x00);
@@ -103,21 +103,16 @@ int ES8388_Init(void)
   //ROUT1/LOUT1 volume max
   st += ES8388_Write_Reg(46, 0x21);
   st += ES8388_Write_Reg(47, 0x21);
-  //ROUT2/LOUT2 volume max
-  st += ES8388_Write_Reg(48, 0x21);
-  st += ES8388_Write_Reg(49, 0x21);
-
-
-  
+ 
   delay(10);
   // amp validation
   gpio_set_level(PA, 1);
-/*  
+ /*
   delayMicroseconds(6);
   gpio_set_level(PA, 0);
   delayMicroseconds(6);
   gpio_set_level(PA, 1);  
-*/
+ */ 
   return st;
 }
 ////////////////////////////////////////////////////////////////////////
@@ -204,7 +199,7 @@ void setup() {
 
 ////// volume init
   vol = maxVol;
- // ES8388vol_Set(vol);
+  ES8388vol_Set(vol);
 
 ////// Specific BT device name (using  MAC ref)
 
@@ -259,19 +254,7 @@ void loop() {
     ES8388vol_Set(vol);  
   }
 
-///// Jack_Detect
-  if(gpio_get_level(Jack_Detect) == 1)
-  {
-// jack ON => Rout2/Lout2  amp OFF 
-    ES8388_Write_Reg(4, 0x0C);  
-    gpio_set_level(PA, 0);        
-  }
-  else
-  {
-// jack OFF => Rout1/Lout1  amp ON 
-    ES8388_Write_Reg(4, 0x30); 
-    gpio_set_level(PA, 1);       
-  }
 
+  
     delay(100);
   }
